@@ -39,5 +39,30 @@ COPY requirements.txt /workspace/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Nsight
+RUN apt-get update -y && apt-get install -y software-properties-common
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub 
+RUN add-apt-repository -y "deb https://developer.download.nvidia.com/devtools/repos/ubuntu22.04/$(dpkg --print-architecture)/ /"
+RUN apt-get install -y nsight-systems 
+
+# Utils
+RUN apt-get install -y vim git bzip2 tmux wget tar htop
+
+# X11 and OpenSSH for GUI
+ENV LIBGL_DRIVERS_PATH /usr/lib/x86_64-linux-gnu/dri
+ENV LIBGL_ALWAYS_INDIRECT 1
+RUN apt-get install -y mesa-utils x11-apps
+RUN apt-get install -y freeglut3-dev libglu1-mesa-dev mesa-common-dev libxkbfile-dev libgl1-mesa-glx
+RUN apt-get install -y ssh openssh-server
+RUN mkdir -p /var/run/sshd
+RUN echo "root:root" | chpasswd
+RUN echo "Port 22" >> /etc/ssh/sshd_config
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+RUN echo "AddressFamily inet" >> /etc/ssh/sshd_config
+RUN echo "X11DisplayOffset 10" >> /etc/ssh/sshd_config
+RUN echo "X11UseLocalhost yes" >> /etc/ssh/sshd_config
+
+EXPOSE 22
+
 # Default command
 CMD ["/bin/bash"]
